@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with AI</title>
+    <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        box-sizing: border-box;
+    }
+
+    .container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    h2 {
+        color: #333;
+        margin-top: 0;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+    }
+
+    button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    #response {
+        background-color: #e9ecef;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 20px;
+        min-height: 100px;
+        width: 100%;
+        overflow-y: auto;
+        font-size: 14px;
+        color: #333;
+    }
+
+    </style>
+</head>
+<body>
+    <h2>Chat with AI</h2>
+    <textarea id="userInput" placeholder="Type your message here..."></textarea><br>
+    <button onclick="sendMessage()">Send</button>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById("userInput").addEventListener("keydown", function(event) {
+            // Allow Enter to send the message, but not when Shift is also pressed (useful for line breaks)
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault(); // Prevent the default action to stop inserting a newline
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value;
+            const responseBox = document.getElementById("response");
+
+            // Simple loading indicator
+            responseBox.innerText = 'Loading...';
+
+            // Check if the input is not just whitespace
+            if (!userInput.trim()) {
+                alert("Please type a message.");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                responseBox.innerText = data.response;
+
+                // Clear input and refocus after message is sent
+                document.getElementById("userInput").value = '';
+                document.getElementById("userInput").focus();
+            } catch (error) {
+                console.error('Error:', error);
+                responseBox.innerText = 'Failed to get a response from the server.';
+            }
+        }
+    </script>
+
+</body>
+</html>
